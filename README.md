@@ -2,7 +2,40 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+Clone the project
+
+```bash
+git clone https://github.com/bang0711/multi-model-ai.git
+```
+
+Install all dependencies:
+
+```bash
+npm install
+# or
+yarn
+# or
+pnpm install
+# or
+bun install
+```
+
+Create .env files
+
+```bash
+touch .env
+```
+
+Paste the environment variables
+
+```bash
+OPENAI_API_KEY='ollama'
+OPENAI_BASE_URL='http://localhost:11434/v1'
+DEFAULT_MODEL='gemma'
+You can change the value of these variables to something else
+```
+
+Run the server:
 
 ```bash
 npm run dev
