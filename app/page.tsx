@@ -19,7 +19,7 @@ export default function Chat() {
       role: "user",
       content: input,
     };
-
+    console.log(userMessage);
     setInput("");
   };
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

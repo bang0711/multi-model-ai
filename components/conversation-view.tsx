@@ -1,6 +1,6 @@
 "use client";
 import { updateConversations } from "@/lib/conversation";
-import React, { FormEvent, KeyboardEvent, useState } from "react";
+import React, { FormEvent, KeyboardEvent, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Message from "./message";
 import { Bot, Loader2, MoveUp } from "lucide-react";
@@ -17,10 +17,14 @@ function ConversationView({ id, conversation }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [AIStreamingResponse, setAIStreamingResponse] = useState("");
+  const [messages, setMessages] = useState(conversation.messages);
 
+  useEffect(() => {
+    setMessages(conversation.messages);
+  }, [conversation.messages]);
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await updateConversations(input, "user", parseInt(id));
+    updateConversations(input, "user", parseInt(id));
     setIsLoading(true);
     setInput("");
     const userMessage: Message = {
@@ -28,18 +32,16 @@ function ConversationView({ id, conversation }: Props) {
       role: "user",
       content: input,
     };
-    const updatedConversation = {
-      ...conversation,
-      messages: [...conversation.messages, userMessage],
-    };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: updatedConversation.messages,
-        model: updatedConversation.model,
+        messages: updatedMessages,
+        model: conversation.model,
       }),
     });
 
@@ -54,12 +56,16 @@ function ConversationView({ id, conversation }: Props) {
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        await updateConversations(
-          assistantMessageContent,
-          "assistant",
-          parseInt(id),
-        );
+        updateConversations(assistantMessageContent, "assistant", parseInt(id));
         setIsStreaming(false);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            id: Date.now(),
+            role: "assistant",
+            content: assistantMessageContent,
+          },
+        ]);
         break;
       }
       setIsLoading(false);
@@ -82,7 +88,7 @@ function ConversationView({ id, conversation }: Props) {
   return (
     <div className="stretch mx-auto flex w-full flex-col justify-between">
       <ScrollArea className="relative flex h-full w-full flex-1 flex-col gap-4 rounded-md border p-4">
-        {conversation.messages.map((message) => (
+        {messages.map((message) => (
           <Message
             content={message.content}
             isUser={message.role === "user"}
